@@ -328,7 +328,7 @@
             <div class="contratista-content">
                 <i class="fas fa-hard-hat"></i>
                 <h2>UC</h2>
-                <p class="subtexto">Contatista urbano</p>
+                <p class="subtexto">Contratista urbano</p>
             </div>
         </div>
 
@@ -336,18 +336,19 @@
             <div class="contratista-content">
                 <i class="fas fa-truck"></i>
                 <h2>OL</h2>
-                <p class="subtexto">Operador logistico</p>
+                <p class="subtexto">Operador logístico</p>
             </div>
         </div>
     </div>
 
+    <!-- PANEL UC -->
     <div class="panel" id="panel-uc">
         <header>
             <h1><span>UC</span> - Panel de Control</h1>
         </header>
 
          <div class="lista-apartados">
-         <div class="item" onclick="window.open('https://cloud.b-ina.co/check/', '_blank')">
+            <div class="item" onclick="window.open('https://calibracionesfleet.logisticos.com.co/mychecklist.php', '_blank')">
                 <i class="fas fa-clipboard-check"></i>
                 <div class="texto">
                     <h3>Checklist</h3>
@@ -356,7 +357,15 @@
                 <span class="acceder">→</span>
             </div>
 
-       
+            <div class="item" onclick="window.open('https://calibracionesfleet.logisticos.com.co/fleetshot', '_blank')">
+                <i class="fas fa-exclamation-circle"></i>
+                <div class="texto">
+                    <h3>Reporte de Novedades</h3>
+                    <p>Reporta cualquier anomalía o novedad del vehículo</p>
+                </div>
+                <span class="acceder">→</span>
+            </div>
+
             <div class="item" onclick="iniciarFlujoDocumentos('UC')">
                 <i class="fas fa-folder-open"></i>
                 <div class="texto">
@@ -375,7 +384,7 @@
                 <span class="acceder">→</span>
             </div>
             
-            <div class="item" onclick="window.open(' https://fleetcheck.logisticos.com.co/mi_rendimiento.php')">
+            <div class="item" onclick="window.open('https://fleetcheck.logisticos.com.co/mi_rendimiento.php')">
                 <i class="fas fa-gas-pump"></i>
                 <div class="texto">
                     <h3>Rendimiento de combustible</h3>
@@ -390,26 +399,36 @@
         </div>
     </div>
 
+    <!-- PANEL OL -->
     <div class="panel" id="panel-ol">
         <header>
             <h1><span>OL</span> - Panel de Control</h1>
         </header>
 
         <div class="lista-apartados">
-            <div class="item" onclick="iniciarFlujoDocumentos('OL')">
-                <i class="fas fa-folder-open"></i>
-                <div class="texto">
-                    <h3>Mis Documentos</h3>
-                    <p>Consulta el estado de tu documentación</p>
-                </div>
-                <span class="acceder">→</span>
-            </div>
-
             <div class="item" onclick="window.open('https://www.geomov.com/geochecklist', '_blank')">
                 <i class="fas fa-clipboard-list"></i>
                 <div class="texto">
                     <h3>Checklist</h3>
                     <p>Formulario de verificación diario</p>
+                </div>
+                <span class="acceder">→</span>
+            </div>
+
+            <div class="item" onclick="window.open('https://fleetcheck.logisticos.com.co/fleetshot', '_blank')">
+                <i class="fas fa-exclamation-circle"></i>
+                <div class="texto">
+                    <h3>Reporte de Novedades</h3>
+                    <p>Reporta cualquier anomalía o novedad del vehículo</p>
+                </div>
+                <span class="acceder">→</span>
+            </div>
+
+            <div class="item" onclick="iniciarFlujoDocumentos('OL')">
+                <i class="fas fa-folder-open"></i>
+                <div class="texto">
+                    <h3>Mis Documentos</h3>
+                    <p>Consulta el estado de tu documentación</p>
                 </div>
                 <span class="acceder">→</span>
             </div>
@@ -473,30 +492,9 @@
 
         /* --- LÓGICA DE MIS DOCUMENTOS --- */
         async function iniciarFlujoDocumentos(contratista) {
-            // Paso 1: Seleccionar el perfil según el contratista
-            const opciones = contratista === 'UC' 
-                ? { 'CONDUCTOR': '👤 Conductor', 'CAMION': '🚛 Camión' }
-                : { 'OPM': '👤 OPM', 'MONTACARGAS': '🏗️ Montacargas' };
-
-            const { value: perfilSeleccionado } = await Swal.fire({
-                title: 'Selecciona tu perfil',
-                input: 'radio',
-                inputOptions: opciones,
-                showCancelButton: true,
-                cancelButtonText: 'Cancelar',
-                confirmButtonText: 'Continuar',
-                confirmButtonColor: contratista === 'UC' ? '#FFC107' : '#1E88E5',
-                inputValidator: (value) => {
-                    if (!value) {
-                        return 'Debes seleccionar una opción para continuar';
-                    }
-                }
-            });
-
-            // Si el usuario seleccionó y dio a continuar
-            if (perfilSeleccionado) {
-                pedirIdentificacion(contratista, perfilSeleccionado);
-            }
+            // Ya no preguntamos por perfil, se asigna automáticamente al vehículo correspondiente.
+            const perfilSeleccionado = contratista === 'UC' ? 'CAMION' : 'MONTACARGAS';
+            pedirIdentificacion(contratista, perfilSeleccionado);
         }
 
         async function pedirIdentificacion(contratista, perfil) {
@@ -504,32 +502,23 @@
             let tipoInput = 'text';
             let validacionRegex = null;
             let mensajeError = '';
-            let urlTipo = '';
+            let urlTipo = 'VEHICULO';
 
-            // Configuramos las reglas dependiendo del perfil
-            if (perfil === 'CONDUCTOR' || perfil === 'OPM') {
-                titulo = 'Ingresa tu Cédula';
-                tipoInput = 'number';
-                urlTipo = 'CONDUCTOR';
-                mensajeError = 'Debes ingresar un número válido';
-                // Solo números
-                validacionRegex = /^[0-9]+$/;
-            } else if (perfil === 'CAMION') {
+            // Configuramos las reglas solo para los vehículos
+            if (perfil === 'CAMION') {
                 titulo = 'Ingresa la Placa';
-                urlTipo = 'VEHICULO';
                 mensajeError = 'La placa debe tener exactamente 6 caracteres, letras o números, sin símbolos';
                 // 6 caracteres alfanuméricos
                 validacionRegex = /^[A-Z0-9]{6}$/i;
             } else if (perfil === 'MONTACARGAS') {
                 titulo = 'Ingresa el número de Montacargas';
                 tipoInput = 'number';
-                urlTipo = 'VEHICULO';
                 mensajeError = 'Debe contener exactamente 3 números';
                 // Exactamente 3 números
                 validacionRegex = /^[0-9]{3}$/;
             }
 
-            // Paso 2: Pedir la información y validar
+            // Pedir la información directamente
             const { value: identificador } = await Swal.fire({
                 title: titulo,
                 input: tipoInput,
@@ -537,7 +526,7 @@
                     style: 'text-transform: uppercase;' // Forzamos visualmente las mayúsculas
                 },
                 showCancelButton: true,
-                cancelButtonText: 'Atrás',
+                cancelButtonText: 'Cancelar',
                 confirmButtonText: 'Buscar',
                 confirmButtonColor: contratista === 'UC' ? '#FFC107' : '#1E88E5',
                 inputValidator: (value) => {
@@ -555,9 +544,6 @@
                 const idLimpio = identificador.trim().toUpperCase();
                 const url = `https://fleetdriver.logisticos.com.co/flota.php?contratista=${contratista}&tipo=${urlTipo}/${idLimpio}`;
                 window.location.href = url;
-            } else if (identificador === undefined) {
-                // Si hizo clic en Atrás/Cancelar, volvemos a mostrar el paso 1
-                iniciarFlujoDocumentos(contratista);
             }
         }
     </script>
